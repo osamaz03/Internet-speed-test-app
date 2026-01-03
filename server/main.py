@@ -1,22 +1,29 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Request
 from fastapi.responses import StreamingResponse
 import time
 
 app = FastAPI()
 
-@app.get("/download")
 
-def download_test():
-    def generate():
-        for _ in range(10):
-            yield b"x" * 1024 *1024
-            time.sleep(0.1)
-        return StreamingResponse(generate(),media_type= "application/octet-stream")
+@app.get("/ping")
+def ping():
+    time.sleep(0.02)
+    return {"status":"ok"}
+
+
+
+@app.get("/download")
+def download():
+    size = 5 * 1024 * 1024
+    data = b"x" * size
+    return data
+
     
 @app.post("/upload")
+async def upload(request: Request):
+    data = await request.body()
+    return {"received_bytes":(len(data))}
 
-def upload_test(data:bytes):
-    return{
-        "status" : "received",
-        "size" : len(data)
-    }
+@app.get("/")
+def root():
+    return{"message":"speed test server Running"}
